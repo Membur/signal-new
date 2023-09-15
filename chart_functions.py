@@ -3,6 +3,7 @@ import plotly.graph_objs as go
 import os
 import yfinance as yf
 import pandas as pd
+from candlestick_detection import detect_candlestick_pattern
 from indicator_functions import calculate_rsi, calculate_macd, calculate_stochastic, calculate_cci, calculate_mfi
 from signal_functions import get_most_recent_signals
 from constants import (
@@ -39,17 +40,14 @@ if __name__ == "__main__":
     main()
 
 
-def generate_chart(symbol, data, data_dir, min_indicators=1, min_volume=None):
-    
-    # Assuming you have OHLC data loaded in variables open_prices, high_prices, low_prices, and close_prices
-    detected_patterns = detect_candlestick_pattern(open_prices, high_prices, low_prices, close_prices)
-
+def generate_chart(symbol, data, data_dir, min_indicators=1, min_volume=None, signals=None, rsi_oversold=None, rsi_overbought=None, macd_threshold=None, stoch_oversold=None, stoch_overbought=None, cci_oversold=None, cci_overbought=None, mfi_oversold=None, mfi_overbought=None):
     # Check the minimum volume threshold
     if min_volume is not None and data['Volume'].iloc[-1] < min_volume:
         print(f"Volume for {symbol} is below the minimum threshold. Skipping...")
         return
 
-    signals = get_most_recent_signals(data)
+    if signals is None:
+        signals = get_most_recent_signals(data)
 
     # Check if at least min_indicators indicators generated signals
     active_signals = [indicator for indicator, signal in signals if signal]
@@ -71,6 +69,7 @@ def generate_chart(symbol, data, data_dir, min_indicators=1, min_volume=None):
         increasing_line_color='green',
         decreasing_line_color='red'
     )
+
 
     fig.add_trace(candlestick)
 

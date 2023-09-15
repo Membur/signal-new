@@ -2,7 +2,9 @@ import os
 import yfinance as yf
 import pandas as pd
 from candlestick_detection import detect_candlestick_pattern
-from indicator_functions import calculate_rsi, calculate_macd, calculate_stochastic, calculate_cci, calculate_mfi
+from indicator_functions import (
+    calculate_rsi, calculate_macd, calculate_stochastic, calculate_cci, calculate_mfi
+)
 from signal_functions import get_most_recent_signals
 from chart_functions import generate_chart
 from constants import (
@@ -26,6 +28,16 @@ def main():
             try:
                 data = yf.download(symbol, start="2022-10-01", end="2023-08-09", interval="1wk")
 
+                # Calculate technical indicators
+                calculate_rsi(data)
+                calculate_macd(data)
+                calculate_stochastic(data)
+                calculate_cci(data)
+                calculate_mfi(data)
+
+                # Get the most recent signals
+                signals = get_most_recent_signals(data)
+
                 # Define detected_patterns here
                 open_prices = data['Open']
                 high_prices = data['High']
@@ -41,13 +53,24 @@ def main():
                 else:
                     print(f"No patterns detected for {symbol}.")
 
+                # Generate chart with signals
                 generate_chart(
-                    symbol,
-                    data,
-                    data_dir=data_dir,
-                    min_indicators=1,
-                    min_volume=min_volume,  # Pass the minimum volume threshold
-                )
+                symbol,
+                data,
+                data_dir=data_dir,
+                min_indicators=3,
+                min_volume=min_volume,  # Pass the minimum volume threshold
+                signals=signals,  # Pass the signals to the chart generation function
+                rsi_oversold=rsi_oversold,
+                rsi_overbought=rsi_overbought,
+                macd_threshold=macd_threshold,
+                stoch_oversold=stoch_oversold,
+                stoch_overbought=stoch_overbought,
+                cci_oversold=cci_oversold,
+                cci_overbought=cci_overbought,
+                mfi_oversold=mfi_oversold,
+                mfi_overbought=mfi_overbought
+            )
             except Exception as e:
                 print(f"Failed to generate chart for symbol {symbol}: {e}")
 
